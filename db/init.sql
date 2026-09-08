@@ -41,25 +41,27 @@ CREATE TABLE usuario (
     id             SERIAL       PRIMARY KEY,
     nome           VARCHAR(150) NOT NULL,
     email          VARCHAR(150) NOT NULL,
+    senha          VARCHAR(255) NOT NULL,
     ambiente       VARCHAR(30)  NOT NULL,
     tempo          VARCHAR(30)  NOT NULL,
     recursos       VARCHAR(30)  NOT NULL,
     interlocutores VARCHAR(30)  NOT NULL,
     data_cadastro  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
-    -- Evita dois cadastros com o mesmo e-mail
     CONSTRAINT uq_usuario_email UNIQUE (email),
 
-    -- Valida os valores fixos das 4 dimensões de contexto (seção 1.4)
     CONSTRAINT chk_usuario_ambiente CHECK (
         ambiente IN ('individual', 'em_aula', 'em_equipe', 'no_trabalho')
     ),
+
     CONSTRAINT chk_usuario_tempo CHECK (
         tempo IN ('ate_15_min', '15_a_45_min', 'mais_45_min')
     ),
+
     CONSTRAINT chk_usuario_recursos CHECK (
         recursos IN ('nenhum', 'papel_ou_celular', 'computador')
     ),
+
     CONSTRAINT chk_usuario_interlocutores CHECK (
         interlocutores IN ('sozinho', 'com_colega', 'com_grupo')
     )
