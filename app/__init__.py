@@ -3,6 +3,7 @@ from flask import Flask
 
 from .config import Config
 from .extensions import db, jwt
+from flasgger import Swagger
 
 
 def create_app():
@@ -12,6 +13,23 @@ def create_app():
 
     db.init_app(app)
     jwt.init_app(app)
+
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": "apispec_1",
+                "route": "/apispec_1.json",
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/dev",
+    }
+
+    Swagger(app, config=swagger_config)
 
     # from .routes.auth import auth_bp
     from .routes.auth import auth_bp
