@@ -9,11 +9,6 @@ class User(db.Model):
     email = db.Column(db.String(150), nullable=False, unique=True)
     senha = db.Column(db.String(255), nullable=False)
 
-    ambiente = db.Column(db.String(30), nullable=False)
-    tempo = db.Column(db.String(30), nullable=False)
-    recursos = db.Column(db.String(30), nullable=False)
-    interlocutores = db.Column(db.String(30), nullable=False)
-
     data_cadastro = db.Column(
         db.DateTime,
         server_default=db.func.current_timestamp()
