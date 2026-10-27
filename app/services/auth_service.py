@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.extensions import db
 from app.models.user import User
-from app.models.perfil_usuario import PerfilUsuario
+from app.models.user_perfil import PerfilUsuario
 
 
 def register_user(
