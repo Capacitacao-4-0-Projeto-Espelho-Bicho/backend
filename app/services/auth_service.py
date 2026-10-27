@@ -1,8 +1,10 @@
+
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.extensions import db
 from app.models.user import User
+from app.models.perfil_usuario import PerfilUsuario
 
 
 def register_user(
@@ -24,21 +26,27 @@ def register_user(
     user = User(
         nome=nome,
         email=email,
-        senha=senha_hash,
+        senha=senha_hash
+    )
+
+    db.session.add(user)
+    db.session.flush()
+
+    perfil = PerfilUsuario(
+        usuario_id=user.id,
         ambiente=ambiente,
         tempo=tempo,
         recursos=recursos,
         interlocutores=interlocutores
     )
 
-    db.session.add(user)
+    db.session.add(perfil)
     db.session.commit()
 
     return user
 
 
 def login_user(email, senha):
-
     user = User.query.filter_by(email=email).first()
 
     if not user:
@@ -47,8 +55,6 @@ def login_user(email, senha):
     if not check_password_hash(user.senha, senha):
         return None
 
-    token = create_access_token(
-        identity=str(user.id)
-    )
+    token = create_access_token(identity=str(user.id))
 
     return token
