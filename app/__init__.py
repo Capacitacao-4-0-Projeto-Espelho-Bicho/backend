@@ -14,6 +14,9 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
 
+    # Registra os modelos no SQLAlchemy
+    from app import models
+
     swagger_config = {
         "headers": [],
         "specs": [
@@ -31,9 +34,7 @@ def create_app():
 
     Swagger(app, config=swagger_config)
 
-    # from .routes.auth import auth_bp
     from .routes.auth import auth_bp
-    # app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     app.register_blueprint(
         auth_bp,
@@ -41,6 +42,7 @@ def create_app():
     )
 
     return app
+
 
 # def create_app():
 #     app = Flask(__name__)
