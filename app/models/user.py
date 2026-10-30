@@ -13,3 +13,10 @@ class User(db.Model):
         db.DateTime,
         server_default=db.func.current_timestamp()
     )
+
+    perfil = db.relationship(
+        "PerfilUsuario",
+        back_populates="usuario",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )

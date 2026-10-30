@@ -6,6 +6,7 @@ class PerfilUsuario(db.Model):
     __tablename__ = "perfil_usuario"
 
     id = db.Column(db.Integer, primary_key=True)
+
     usuario_id = db.Column(
         db.Integer,
         db.ForeignKey("usuario.id", ondelete="CASCADE"),
@@ -28,4 +29,9 @@ class PerfilUsuario(db.Model):
     atualizado_em = db.Column(
         db.DateTime,
         server_default=db.func.current_timestamp()
+    )
+
+    usuario = db.relationship(
+        "User",
+        back_populates="perfil"
     )
