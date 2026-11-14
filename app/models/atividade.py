@@ -1,72 +1,33 @@
+"""Modelo do schema capacitacao, alinhado a db/init.sql."""
+import sqlalchemy as sa
 from app.extensions import db
 
 
 class Atividade(db.Model):
-    __tablename__ = "atividade"
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    nome = db.Column(db.String(200), nullable=False)
-
-    competencia_id = db.Column(
-        db.Integer,
-        db.ForeignKey("competencia.id", ondelete="RESTRICT"),
-        nullable=False
-    )
-
-    dificuldade = db.Column(db.SmallInteger, nullable=False)
-    duracao_min = db.Column(db.Integer, nullable=False)
-
-    ambiente = db.Column(db.String(30), nullable=False)
-    tempo = db.Column(db.String(30), nullable=False)
-    recursos = db.Column(db.String(30), nullable=False)
-    interlocutores = db.Column(db.String(30), nullable=False)
-
-    evidencia_exigida = db.Column(db.String(50), nullable=False)
-    descricao = db.Column(db.Text)
-
-    data_criado = db.Column(
-        db.DateTime,
-        server_default=db.func.current_timestamp()
-    )
-
-    competencia = db.relationship(
-        "Competencia",
-        back_populates="atividades"
-    )
-
-    recomendacoes = db.relationship(
-        "Recomendacao",
-        back_populates="atividade"
-    )
-
+    __tablename__ = 'atividade'
+    id = db.Column(sa.INTEGER(), sa.Identity(always=False), primary_key=True, nullable=False)
+    nome = db.Column(sa.VARCHAR(length=200), nullable=False)
+    competencia_id = db.Column(sa.INTEGER(), nullable=False)
+    habilidade_id = db.Column(sa.INTEGER(), nullable=False)
+    dificuldade = db.Column(sa.INTEGER(), nullable=False)
+    duracao_min = db.Column(sa.INTEGER(), nullable=False)
+    ambiente = db.Column(sa.VARCHAR(length=30), nullable=False, server_default=sa.text("'qualquer'::character varying"))
+    tempo = db.Column(sa.VARCHAR(length=30), nullable=False, server_default=sa.text("'qualquer'::character varying"))
+    recursos = db.Column(sa.VARCHAR(length=30), nullable=False, server_default=sa.text("'qualquer'::character varying"))
+    interlocutores = db.Column(sa.VARCHAR(length=30), nullable=False, server_default=sa.text("'qualquer'::character varying"))
+    descricao = db.Column(sa.TEXT(), nullable=True)
+    data_criado = db.Column(sa.TIMESTAMP(), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP'))
     __table_args__ = (
-        db.CheckConstraint(
-            "dificuldade BETWEEN 1 AND 3",
-            name="chk_atv_dificuldade"
-        ),
-        db.CheckConstraint(
-            "duracao_min > 0",
-            name="chk_atv_duracao"
-        ),
-        db.CheckConstraint(
-            "ambiente IN ('individual', 'em_aula', 'em_equipe', 'no_trabalho')",
-            name="chk_atv_ambiente"
-        ),
-        db.CheckConstraint(
-            "tempo IN ('ate_15_min', '15_a_45_min', 'mais_45_min')",
-            name="chk_atv_tempo"
-        ),
-        db.CheckConstraint(
-            "recursos IN ('nenhum', 'papel_ou_celular', 'computador')",
-            name="chk_atv_recursos"
-        ),
-        db.CheckConstraint(
-            "interlocutores IN ('sozinho', 'com_colega', 'com_grupo')",
-            name="chk_atv_interlocutores"
-        ),
-        db.CheckConstraint(
-            "evidencia_exigida IN ('texto', 'arquivo', 'registro_conclusao')",
-            name="chk_atv_evidencia"
-        ),
+        sa.ForeignKeyConstraint(['competencia_id'], ['capacitacao.competencia.id'], name='atividade_competencia_id_fkey'),
+        sa.ForeignKeyConstraint(['dificuldade'], ['capacitacao.nivel.id'], name='atividade_dificuldade_fkey'),
+        sa.CheckConstraint('duracao_min > 0', name='atividade_duracao_min_check'),
+        sa.ForeignKeyConstraint(['habilidade_id'], ['capacitacao.habilidade.id'], name='atividade_habilidade_id_fkey'),
+        sa.ForeignKeyConstraint(['habilidade_id', 'competencia_id'], ['capacitacao.habilidade.id', 'capacitacao.habilidade.competencia_id'], name='fk_atividade_habilidade_competencia'),
+        sa.UniqueConstraint('id', 'competencia_id', name='uq_atividade_id_competencia'),
+        {'schema': 'capacitacao'},
     )
+
+    competencia = db.relationship("Competencia", back_populates="atividades", foreign_keys=[competencia_id])
+    habilidade = db.relationship("Habilidade", foreign_keys=[habilidade_id])
+    nivel = db.relationship("Nivel", foreign_keys=[dificuldade])
+    questoes = db.relationship("AtividadeQuestao", back_populates="atividade", order_by="AtividadeQuestao.ordem")

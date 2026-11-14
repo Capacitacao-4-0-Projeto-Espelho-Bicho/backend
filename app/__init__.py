@@ -6,10 +6,12 @@ from .extensions import db, jwt
 from flasgger import Swagger
 
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
 
     app.config.from_object(Config)
+    if config:
+        app.config.update(config)
 
     db.init_app(app)
     jwt.init_app(app)

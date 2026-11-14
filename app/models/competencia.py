@@ -1,30 +1,18 @@
+"""Modelo do schema capacitacao, alinhado a db/init.sql."""
+import sqlalchemy as sa
 from app.extensions import db
 
 
 class Competencia(db.Model):
-    __tablename__ = "competencia"
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    nome = db.Column(db.String(100), nullable=False, unique=True)
-    descricao = db.Column(db.Text)
-
-    data_criado = db.Column(
-        db.DateTime,
-        server_default=db.func.current_timestamp()
+    __tablename__ = 'competencia'
+    id = db.Column(sa.INTEGER(), sa.Identity(always=False), primary_key=True, nullable=False)
+    nome = db.Column(sa.VARCHAR(length=100), nullable=False)
+    descricao = db.Column(sa.TEXT(), nullable=True)
+    data_criado = db.Column(sa.TIMESTAMP(), nullable=True, server_default=sa.text('CURRENT_TIMESTAMP'))
+    __table_args__ = (
+        sa.UniqueConstraint('nome', name='uq_competencia_nome'),
+        {'schema': 'capacitacao'},
     )
 
-    perguntas = db.relationship(
-        "Pergunta",
-        back_populates="competencia"
-    )
-
-    atividades = db.relationship(
-        "Atividade",
-        back_populates="competencia"
-    )
-
-    niveis_usuarios = db.relationship(
-        "NivelCompetencia",
-        back_populates="competencia"
-    )
+    habilidades = db.relationship("Habilidade", back_populates="competencia", order_by="Habilidade.ordem", passive_deletes=True)
+    atividades = db.relationship("Atividade", back_populates="competencia", foreign_keys="Atividade.competencia_id")
