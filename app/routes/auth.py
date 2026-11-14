@@ -108,7 +108,9 @@ def register():
               type: string
               example: Email já cadastrado.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Envie um objeto JSON válido."}), 400
 
     required_fields = [
         "nome",
@@ -121,7 +123,7 @@ def register():
     ]
 
     for field in required_fields:
-        if not data.get(field):
+        if not isinstance(data.get(field), str) or not data[field].strip():
             return jsonify({
                 "error": f"O campo '{field}' é obrigatório."
             }), 400
@@ -214,12 +216,14 @@ def login():
               type: string
               example: Email ou senha inválidos.
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Envie um objeto JSON válido."}), 400
 
     email = data.get("email")
     senha = data.get("senha")
 
-    if not email or not senha:
+    if not isinstance(email, str) or not email.strip() or not isinstance(senha, str) or not senha.strip():
         return jsonify({
             "error": "Email e senha são obrigatórios."
         }), 400
