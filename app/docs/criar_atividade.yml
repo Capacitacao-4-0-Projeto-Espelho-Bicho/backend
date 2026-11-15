@@ -1,0 +1,161 @@
+tags:
+- Atividades
+summary: Cadastrar atividade completa
+description: Permitido a gestor e admin. Cria atividade, questões e alternativas em
+  uma única transação. A habilidade deve pertencer à competência. Ordens positivas
+  e únicas em cada conjunto. Exige ao menos uma questão e duas alternativas por questão;
+  pontuações explícitas, não negativas e com até duas casas decimais. O contexto omitido
+  usa qualquer.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou usuário inexistente/inativo.
+  403:
+    description: Perfil sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  201:
+    description: Atividade completa criada.
+    schema:
+      type: object
+      properties:
+        nome: &id003
+          type: string
+          maxLength: 200
+        descricao: &id004
+          type: string
+        competencia_id: &id001
+          type: integer
+          minimum: 1
+        habilidade_id: *id001
+        dificuldade: &id005
+          type: integer
+          minimum: 1
+          description: ID do nível (1 a 4 no catálogo inicial).
+        duracao_min: *id001
+        ambiente: &id006
+          type: string
+          maxLength: 30
+          default: qualquer
+        tempo: &id007
+          type: string
+          maxLength: 30
+          default: qualquer
+        recursos: &id008
+          type: string
+          maxLength: 30
+          default: qualquer
+        interlocutores: &id009
+          type: string
+          maxLength: 30
+          default: qualquer
+        questoes:
+          type: array
+          items:
+            type: object
+            properties:
+              enunciado: &id010
+                type: string
+              instrucoes: &id011
+                type: string
+              ordem: *id001
+              alternativas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    texto: &id012
+                      type: string
+                    ordem: *id001
+                    pontuacao: &id013
+                      type: number
+                      minimum: 0
+                      maximum: 99999.99
+                      multipleOf: 0.01
+                    justificativa: &id014
+                      type: string
+                    id: *id001
+              id: *id001
+        id: *id001
+  400:
+    description: Dados inválidos; nada foi criado.
+    schema: &id002
+      type: object
+      properties:
+        error:
+          type: string
+  409:
+    description: Conflito de integridade; nada foi criado.
+    schema: *id002
+consumes:
+- application/json
+parameters:
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    required:
+    - nome
+    - competencia_id
+    - habilidade_id
+    - dificuldade
+    - duracao_min
+    - questoes
+    properties:
+      nome: *id003
+      descricao: *id004
+      competencia_id: *id001
+      habilidade_id: *id001
+      dificuldade: *id005
+      duracao_min: *id001
+      ambiente: *id006
+      tempo: *id007
+      recursos: *id008
+      interlocutores: *id009
+      questoes:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          required:
+          - enunciado
+          - ordem
+          - alternativas
+          properties:
+            enunciado: *id010
+            instrucoes: *id011
+            ordem: *id001
+            alternativas:
+              type: array
+              minItems: 2
+              items:
+                type: object
+                required:
+                - texto
+                - ordem
+                - pontuacao
+                properties:
+                  texto: *id012
+                  ordem: *id001
+                  pontuacao: *id013
+                  justificativa: *id014
+    example:
+      nome: Comunicação em equipe
+      competencia_id: 1
+      habilidade_id: 1
+      dificuldade: 1
+      duracao_min: 15
+      questoes:
+      - enunciado: Como você analisa um processo?
+        ordem: 1
+        alternativas:
+        - texto: Analiso cada etapa e suas relações.
+          ordem: 1
+          pontuacao: 3
+        - texto: Observo somente o resultado.
+          ordem: 2
+          pontuacao: 0

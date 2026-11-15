@@ -17,13 +17,19 @@ def conectar():
                             password=os.getenv('POSTGRES_PASSWORD'))
 
 
+def aplicar_migracoes(cur):
+    for arquivo in sorted((ROOT / 'db/migrations').glob('*.sql')):
+        cur.execute(arquivo.read_text())
+
+
 def atualizar(conn):
     with conn:
         with conn.cursor() as cur:
             cur.execute("SELECT pg_advisory_xact_lock(743912)")
             cur.execute("SELECT to_regnamespace('capacitacao')")
             if cur.fetchone()[0] is not None:
-                print('Schema capacitacao já existe; nenhuma alteração aplicada.')
+                aplicar_migracoes(cur)
+                print('Schema existente atualizado; contas e dados preservados.')
                 return
             sql = (ROOT / 'db/init.sql').read_text()
             # A transação é controlada por este script, incluindo a cópia das contas.

@@ -1,0 +1,58 @@
+tags:
+- Usuários
+summary: Alterar papel de usuário
+description: Somente admin pode alterar papéis. A permissão é consultada no banco
+  a cada requisição destas rotas, inclusive para tokens já emitidos.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou usuário inexistente/inativo.
+  403:
+    description: Perfil sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  200:
+    description: Papel atualizado.
+    schema:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        papel:
+          type: string
+  400:
+    description: Papel inválido.
+    schema: &id001
+      type: object
+      properties:
+        error:
+          type: string
+  404:
+    description: Usuário não encontrado.
+    schema: *id001
+consumes:
+- application/json
+parameters:
+- in: path
+  name: usuario_id
+  required: true
+  type: integer
+  minimum: 1
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    required:
+    - papel
+    properties:
+      papel:
+        type: string
+        enum:
+        - usuario
+        - gestor
+        - admin

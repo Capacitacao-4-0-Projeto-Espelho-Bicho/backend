@@ -32,6 +32,7 @@ def register_user(
     user = User(
         nome=nome,
         email=email,
+        papel="usuario",
         senha_hash=senha_hash
     )
 
