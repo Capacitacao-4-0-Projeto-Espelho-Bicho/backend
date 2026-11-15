@@ -1,0 +1,93 @@
+tags:
+- Atividades
+summary: Consultar atividade
+description: Disponível para usuario, gestor e admin. Questões e alternativas vêm
+  por ordem. Pontuações e justificativas das alternativas são retornadas somente para
+  gestor e admin; são omitidas para usuario.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou usuário inexistente/inativo.
+  403:
+    description: Perfil sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  200:
+    description: Atividade e suas questões.
+    schema:
+      type: object
+      properties:
+        nome:
+          type: string
+          maxLength: 200
+        descricao:
+          type: string
+        competencia_id: &id001
+          type: integer
+          minimum: 1
+        habilidade_id: *id001
+        dificuldade:
+          type: integer
+          minimum: 1
+          description: ID do nível (1 a 4 no catálogo inicial).
+        duracao_min: *id001
+        ambiente:
+          type: string
+          maxLength: 30
+          default: qualquer
+        tempo:
+          type: string
+          maxLength: 30
+          default: qualquer
+        recursos:
+          type: string
+          maxLength: 30
+          default: qualquer
+        interlocutores:
+          type: string
+          maxLength: 30
+          default: qualquer
+        questoes:
+          type: array
+          items:
+            type: object
+            properties:
+              enunciado:
+                type: string
+              instrucoes:
+                type: string
+              ordem: *id001
+              alternativas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    texto:
+                      type: string
+                    ordem: *id001
+                    pontuacao:
+                      type: number
+                      minimum: 0
+                      maximum: 99999.99
+                      multipleOf: 0.01
+                    justificativa:
+                      type: string
+                    id: *id001
+              id: *id001
+        id: *id001
+  404:
+    description: Atividade não encontrada.
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+parameters:
+- in: path
+  name: atividade_id
+  required: true
+  type: integer
+  minimum: 1

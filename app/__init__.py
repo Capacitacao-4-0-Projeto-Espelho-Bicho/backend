@@ -65,6 +65,9 @@ def create_app(config=None):
 
     from .routes.auth import auth_bp
     from .routes.catalogo import catalogo_bp
+    from .routes.atividades import atividades_bp
+    from .routes.usuarios import usuarios_bp
+    from .cli import registrar_comandos
 
     app.register_blueprint(
         auth_bp,
@@ -72,6 +75,9 @@ def create_app(config=None):
     )
 
     app.register_blueprint(catalogo_bp, url_prefix="/api")
+    app.register_blueprint(atividades_bp, url_prefix="/api")
+    app.register_blueprint(usuarios_bp, url_prefix="/api")
+    registrar_comandos(app)
 
     return app
 

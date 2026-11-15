@@ -352,6 +352,9 @@ ALTER TABLE usuario ADD COLUMN senha_hash TEXT NOT NULL;
 
 ALTER TABLE usuario ADD COLUMN ativo BOOLEAN NOT NULL DEFAULT TRUE;
 
+ALTER TABLE usuario ADD COLUMN papel VARCHAR(20) NOT NULL DEFAULT 'usuario'
+    CONSTRAINT chk_usuario_papel CHECK (papel IN ('usuario', 'gestor', 'admin'));
+
 ALTER TABLE usuario ADD COLUMN ultimo_login_em TIMESTAMPTZ;
 
 CREATE UNIQUE INDEX uq_usuario_email_normalizado ON usuario(lower(trim(email)));
