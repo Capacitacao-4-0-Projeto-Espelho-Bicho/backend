@@ -1,0 +1,73 @@
+tags:
+- Meu nivelamento
+summary: Iniciar ou retomar nivelamento da competência
+description: Usa apenas o usuário do JWT e exige que a competência esteja selecionada
+  e ativa. Ao iniciar, usa todas as questões cadastradas das habilidades da competência,
+  em todos os níveis, ordenadas pela ordem da habilidade e depois da questão, com
+  IDs como desempate. Registra as questões e o máximo de pontos de cada uma para essa
+  tentativa. Exige pelo menos uma questão, ao menos duas alternativas por questão
+  e máximo total positivo. Chamadas repetidas retomam a mesma avaliação aberta, sem
+  incluir questões cadastradas depois. Não retorna pontuações nem justificativas das
+  alternativas. Competência já concluída não inicia automaticamente uma reavaliação.
+  Remover uma escolha não apaga a tentativa, mas bloqueia a retomada até reativar
+  a seleção. Ainda não recebe respostas nem conclui a avaliação.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou conta inexistente/inativa.
+  403:
+    description: Papel sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  200:
+    description: Avaliação existente retomada.
+    schema: &id003
+      type: object
+      properties:
+        avaliacao_id: &id001
+          type: integer
+        competencia_id: *id001
+        status:
+          type: string
+          example: em_andamento
+        questoes:
+          type: array
+          items:
+            type: object
+            properties:
+              id: *id001
+              habilidade_id: *id001
+              enunciado: &id002
+                type: string
+              instrucoes:
+                type: string
+                x-nullable: true
+              ordem: *id001
+              tempo_estimado_min:
+                type: integer
+                x-nullable: true
+              alternativas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: *id001
+                    texto: *id002
+                    ordem: *id001
+  201:
+    description: Avaliação criada com as questões da competência.
+    schema: *id003
+  404:
+    description: Competência inexistente ou não selecionada pelo usuário.
+  409:
+    description: Sem questões completas, máximo total zero, nivelamento já concluído,
+      reavaliação aberta ou conflito de integridade. Nenhuma tentativa parcial é criada.
+parameters:
+- in: path
+  name: competencia_id
+  required: true
+  type: integer
+  minimum: 1

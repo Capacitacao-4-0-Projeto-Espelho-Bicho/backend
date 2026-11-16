@@ -1,0 +1,148 @@
+tags:
+- Nivelamento
+summary: Cadastrar questão de nivelamento
+description: Exclusiva de gestor e admin. Cria uma questão (tarefa) e todas as alternativas
+  em uma única transação. Questões de nivelamento são distintas das atividades de
+  desenvolvimento. A competência é determinada pela habilidade, que deve existir,
+  assim como o nível. Exige de duas a cinco alternativas, com ordens únicas entre
+  1 e 5 e pontuação explícita entre 0 e 99999.99 com até duas casas decimais. A ordem
+  da questão e o tempo estimado devem ser positivos; o tempo omitido usa 15 minutos.
+  A resposta editorial inclui pontuações e justificativas.
+consumes:
+- application/json
+produces:
+- application/json
+security:
+- BearerAuth: []
+parameters:
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    required:
+    - enunciado
+    - ordem
+    - alternativas
+    - habilidade_id
+    - nivel_id
+    properties:
+      enunciado:
+        type: string
+      instrucoes:
+        type: string
+      ordem: &id001
+        type: integer
+        minimum: 1
+        maximum: 5
+      alternativas:
+        type: array
+        minItems: 2
+        items:
+          type: object
+          required:
+          - texto
+          - ordem
+          - pontuacao
+          properties:
+            texto:
+              type: string
+            ordem: *id001
+            pontuacao:
+              type: number
+              minimum: 0
+              maximum: 99999.99
+              multipleOf: 0.01
+            justificativa:
+              type: string
+        maxItems: 5
+      habilidade_id:
+        type: integer
+        minimum: 1
+      nivel_id:
+        type: integer
+        minimum: 1
+      tempo_estimado_min:
+        type: integer
+        minimum: 1
+        default: 15
+    example:
+      habilidade_id: 1
+      nivel_id: 1
+      enunciado: Como você analisa as etapas de um processo?
+      instrucoes: Escolha a opção mais próxima da sua prática.
+      ordem: 1
+      tempo_estimado_min: 15
+      alternativas:
+      - texto: Observo só o resultado final.
+        ordem: 1
+        pontuacao: 0
+      - texto: Analiso as etapas e suas relações.
+        ordem: 2
+        pontuacao: 3
+        justificativa: Considera o processo em seu contexto.
+responses:
+  201:
+    description: Questão e alternativas criadas.
+    schema:
+      type: object
+      required:
+      - enunciado
+      - ordem
+      - alternativas
+      - habilidade_id
+      - nivel_id
+      properties:
+        enunciado:
+          type: string
+        instrucoes:
+          type: string
+        ordem: &id002
+          type: integer
+          minimum: 1
+          maximum: 5
+        alternativas:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            required:
+            - texto
+            - ordem
+            - pontuacao
+            properties:
+              texto:
+                type: string
+              ordem: *id002
+              pontuacao:
+                type: number
+                minimum: 0
+                maximum: 99999.99
+                multipleOf: 0.01
+              justificativa:
+                type: string
+              id:
+                type: integer
+          maxItems: 5
+        habilidade_id:
+          type: integer
+          minimum: 1
+        nivel_id:
+          type: integer
+          minimum: 1
+        tempo_estimado_min:
+          type: integer
+          minimum: 1
+          default: 15
+        id:
+          type: integer
+  400:
+    description: Dados inválidos. Nada foi criado.
+  401:
+    description: Token ausente/expirado ou usuário inexistente/inativo.
+  403:
+    description: Perfil sem permissão. Somente gestor e admin podem cadastrar.
+  409:
+    description: Conflito de integridade. Nada foi criado.
+  422:
+    description: Token inválido ou diferente de acesso.

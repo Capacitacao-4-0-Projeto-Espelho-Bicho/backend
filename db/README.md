@@ -87,3 +87,70 @@ pontuação explícita entre 0 e 99999.99 com até duas casas decimais, e ordens
 positivas e únicas em cada conjunto. A habilidade deve pertencer à competência,
 e a dificuldade deve existir no catálogo de níveis. O contexto omitido usa
 `qualquer`. Qualquer falha reverte atividade, questões e alternativas juntas.
+
+## Questões de nivelamento
+
+`POST /api/tarefas` permite que gestor e admin cadastrem uma questão de
+nivelamento e suas alternativas na mesma transação. A rota exige JWT e está
+no grupo **Nivelamento** do Swagger `/dev`, com exemplo completo.
+
+Campos obrigatórios: `habilidade_id`, `nivel_id`, `enunciado`, `ordem` e
+`alternativas`. Cada alternativa exige `texto`, `ordem` e `pontuacao`.
+A competência é determinada pela habilidade; habilidade e nível devem existir.
+São aceitas de duas a cinco alternativas, com ordens únicas entre 1 e 5,
+pontuações de 0 a 99999.99 e até duas casas decimais. A ordem da questão é
+positiva; não é exigida exclusividade entre questões, pois o schema não define
+esse agrupamento. `instrucoes` e `justificativa` são opcionais;
+`tempo_estimado_min` é positivo e usa 15 quando omitido.
+
+A resposta `201` inclui a questão, as alternativas ordenadas e seus IDs,
+pontuações e justificativas, para conferência editorial. Dados inválidos retornam
+`400`; conflito de integridade retorna `409`. Ambos preservam a atomicidade:
+nenhuma parte da questão fica gravada. Usuários comuns recebem `403`.
+
+Essa rota alimenta `tarefa`/`alternativa`, usadas no nivelamento, e não
+`atividade`/`atividade_questao`, usadas nas atividades de desenvolvimento.
+Não exige migração: as tabelas já fazem parte de `init.sql`. A execução da
+avaliação pelo usuário e o cálculo do resultado ainda não estão implementados.
+
+## Competências escolhidas e início de nivelamento
+
+Todas as rotas abaixo exigem JWT e uma conta ativa (`usuario`, `gestor` ou
+`admin`), e operam exclusivamente sobre o usuário identificado pelo token.
+Estão documentadas no grupo **Meu nivelamento** do Swagger `/dev`.
+
+1. `PUT /api/usuarios/me/competencias` recebe `{"competencia_ids": [5, 10]}`.
+   A lista representa a seleção completa: IDs inexistentes, inválidos ou
+   repetidos retornam `400` sem mudar a seleção. `[]` desativa todas as escolhas.
+   Itens removidos ficam inativos; avaliações e resultados anteriores permanecem.
+2. `GET /api/usuarios/me/competencias` lista as escolhas ativas com nome,
+   descrição e `nivelamento`: `status`, `avaliacao_id` e `nivel`.
+   O status é `pendente`, `em_andamento` ou `concluida`. Sem avaliação, ou
+   após cancelamento, `avaliacao_id` e `nivel` são nulos. Uma avaliação concluída
+   pode retornar o nível obtido em `nivel` (`id` e `nome`).
+3. `POST /api/usuarios/me/competencias/<id>/nivelamento` não exige corpo.
+   Inicia uma avaliação (`201`) ou retoma a aberta (`200`), retornando
+   `avaliacao_id`, `competencia_id`, `status` e `questoes` com alternativas.
+   Pontuações, justificativas e nível atribuído à questão não são expostos.
+
+A primeira tentativa inclui todas as questões cadastradas das habilidades da
+competência, em todos os níveis. São ordenadas pela habilidade e depois pela
+questão, com os IDs como desempate; alternativas vêm por ordem. O conjunto
+inicial e o máximo de pontos por questão são registrados em `avaliacao_tarefa`.
+Questões novas não são acrescentadas à tentativa quando ela é retomada.
+
+Competência não selecionada ou inativa retorna `404`. Sem questões completas,
+com máximo total zero, com nivelamento já concluído ou com reavaliação em
+andamento, retorna `409`. Cada questão precisa de pelo menos duas alternativas.
+O máximo de cada questão é a maior pontuação de suas alternativas; o total
+precisa ser positivo. Qualquer falha reverte a criação completa da avaliação.
+Seleção e início usam o mesmo bloqueio por usuário para coordenar chamadas
+concorrentes, além do índice que impede duas avaliações abertas por competência.
+
+As tabelas já existem; esta entrega não exige migração. O envio de respostas,
+a conclusão, o cálculo do nível e a reavaliação ficam para a próxima etapa.
+
+## Roteiro manual por perfil
+
+Veja [os fluxos completos de usuário, gestor e admin](../docs/fluxos-testes.md),
+com preparação, exemplos de JSON, permissões, isolamento e resultados esperados.
