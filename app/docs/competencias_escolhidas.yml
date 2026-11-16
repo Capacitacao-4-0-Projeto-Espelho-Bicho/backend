@@ -1,0 +1,50 @@
+tags:
+- Meu nivelamento
+summary: Consultar competências escolhidas
+description: Retorna somente as competências ativas do usuário do JWT, por ID, com
+  status pendente, em_andamento ou concluida. Sem tentativa, ou após cancelamento,
+  retorna pendente e avaliacao_id nulo. Quando concluída, inclui o nível obtido. Retorna
+  [] quando não há escolhas. Não aceita consultar seleções de outras pessoas.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou conta inexistente/inativa.
+  403:
+    description: Papel sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  200:
+    description: Competências escolhidas e status individuais.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          competencia_id: &id001
+            type: integer
+          nome: &id002
+            type: string
+          descricao:
+            type: string
+            x-nullable: true
+          nivelamento:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                - pendente
+                - em_andamento
+                - concluida
+              avaliacao_id:
+                type: integer
+                x-nullable: true
+              nivel:
+                type: object
+                x-nullable: true
+                properties:
+                  id: *id001
+                  nome: *id002

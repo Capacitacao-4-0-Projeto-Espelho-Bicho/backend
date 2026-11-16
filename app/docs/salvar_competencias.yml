@@ -1,0 +1,76 @@
+tags:
+- Meu nivelamento
+summary: Salvar competências escolhidas
+description: Substitui a seleção completa do usuário identificado no JWT. IDs devem
+  existir, ser positivos e não repetidos. Lista vazia remove todas as escolhas ativas.
+  Competências removidas ficam inativas, sem apagar avaliações; escolhê-las novamente
+  preserva o histórico e permite retomar uma avaliação aberta. Campos de identificação
+  do usuário no corpo não são usados. A alteração é atômica e idempotente.
+produces:
+- application/json
+security:
+- BearerAuth: []
+responses:
+  401:
+    description: Token ausente/expirado ou conta inexistente/inativa.
+  403:
+    description: Papel sem permissão.
+  422:
+    description: Token inválido ou diferente de acesso.
+  200:
+    description: Seleção atual com a situação dos nivelamentos.
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          competencia_id: &id001
+            type: integer
+          nome: &id002
+            type: string
+          descricao:
+            type: string
+            x-nullable: true
+          nivelamento:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                - pendente
+                - em_andamento
+                - concluida
+              avaliacao_id:
+                type: integer
+                x-nullable: true
+              nivel:
+                type: object
+                x-nullable: true
+                properties:
+                  id: *id001
+                  nome: *id002
+  400:
+    description: JSON ou IDs inválidos. A seleção anterior é preservada.
+  409:
+    description: Conflito de integridade. Nenhuma alteração aplicada.
+consumes:
+- application/json
+parameters:
+- in: body
+  name: body
+  required: true
+  schema:
+    type: object
+    required:
+    - competencia_ids
+    properties:
+      competencia_ids:
+        type: array
+        uniqueItems: true
+        items:
+          type: integer
+          minimum: 1
+    example:
+      competencia_ids:
+      - 5
+      - 10

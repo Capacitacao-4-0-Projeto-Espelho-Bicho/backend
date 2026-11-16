@@ -67,6 +67,8 @@ def create_app(config=None):
     from .routes.catalogo import catalogo_bp
     from .routes.atividades import atividades_bp
     from .routes.usuarios import usuarios_bp
+    from .routes.tarefas import tarefas_bp
+    from .routes.nivelamento import nivelamento_bp
     from .cli import registrar_comandos
 
     app.register_blueprint(
@@ -77,6 +79,8 @@ def create_app(config=None):
     app.register_blueprint(catalogo_bp, url_prefix="/api")
     app.register_blueprint(atividades_bp, url_prefix="/api")
     app.register_blueprint(usuarios_bp, url_prefix="/api")
+    app.register_blueprint(tarefas_bp, url_prefix="/api")
+    app.register_blueprint(nivelamento_bp, url_prefix="/api")
     registrar_comandos(app)
 
     return app
